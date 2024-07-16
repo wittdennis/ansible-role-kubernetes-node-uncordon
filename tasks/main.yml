@@ -1,2 +1,26 @@
 ---
-# tasks file for role_remplate
+- name: Wait for cilium
+  when:
+    - kubernetes_node_uncordon_cni == 'cilium'
+  ansible.builtin.command:
+    cmd: >-
+      kubectl
+        wait pod -n kube-system -l k8s-app=cilium
+        --field-selector 'spec.nodeName=={{ kubernetes_node_name | default(inventory_hostname) }}'
+        --for=condition=Ready
+        --timeout={{ kubernetes_node_uncordon_cni_wait_timeout_seconds }}s
+  delegate_to: "{{ groups['kubernetes_control_plane'][0] }}"
+  changed_when: false
+
+- name: Wait before uncordoning node
+  ansible.builtin.pause:
+    seconds: "{{ kubernetes_node_uncordon_wait_seconds }}"
+  when: kubernetes_node_uncordon_wait_seconds != 0
+
+- name: Uncordon node
+  ansible.builtin.command:
+    cmd: >-
+      kubectl uncordon {{ kubernetes_node_name | default(inventory_hostname) }}
+  register: uncordon_result
+  delegate_to: "{{ groups['kubernetes_control_plane'][0] }}"
+  changed_when: uncordon_result.rc == 0
