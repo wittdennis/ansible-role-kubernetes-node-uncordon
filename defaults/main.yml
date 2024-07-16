@@ -1,2 +1,4 @@
 ---
-# defaults file for role_remplate
+kubernetes_node_uncordon_cni: "not specified"
+kubernetes_node_uncordon_cni_wait_timeout_seconds: 120
+kubernetes_node_uncordon_wait_seconds: 0
