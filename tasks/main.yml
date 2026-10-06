@@ -9,6 +9,10 @@
         --field-selector 'spec.nodeName=={{ kubernetes_node_name | default(inventory_hostname) }}'
         --for=condition=Ready
         --timeout={{ kubernetes_node_uncordon_cni_wait_timeout_seconds }}s
+  register: kubernetes_node_uncordon_cilium_ready
+  until: kubernetes_node_uncordon_cilium_ready.rc == 0
+  retries: 3
+  delay: 5
   delegate_to: "{{ groups['kubernetes_control_plane'][0] }}"
   changed_when: false
 
@@ -22,5 +26,8 @@
     cmd: >-
       kubectl uncordon {{ kubernetes_node_name | default(inventory_hostname) }}
   register: uncordon_result
+  until: uncordon_result.rc == 0
+  retries: 3
+  delay: 5
   delegate_to: "{{ groups['kubernetes_control_plane'][0] }}"
   changed_when: uncordon_result.rc == 0
