@@ -14,6 +14,7 @@
   retries: 3
   delay: 5
   delegate_to: "{{ groups['kubernetes_control_plane'][0] }}"
+  become: true
   changed_when: false
 
 - name: Wait before uncordoning node
@@ -30,4 +31,5 @@
   retries: 3
   delay: 5
   delegate_to: "{{ groups['kubernetes_control_plane'][0] }}"
+  become: true
   changed_when: uncordon_result.rc == 0
